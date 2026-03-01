@@ -286,6 +286,27 @@
   .col-location { max-width: 220px; }
   .col-referrals { max-width: 200px; color: var(--text-2); font-size: 13px; }
   .col-notes { max-width: 300px; color: var(--text-2); font-size: 13px; }
+  .notes-text {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .notes-text.expanded {
+    -webkit-line-clamp: unset;
+    display: block;
+  }
+  .notes-toggle {
+    color: var(--accent);
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 2px;
+    display: inline-block;
+  }
+  .notes-toggle:hover { text-decoration: underline; }
 
   .func-tag {
     display: inline-block;
@@ -604,8 +625,8 @@ function renderTable(entries) {
       <td class="col-email">${emailHtml}</td>
       <td class="col-functions">${fnTags}</td>
       <td class="col-location">${locTags}</td>
-      <td class="col-referrals">${esc(e.referrals)}</td>
-      <td class="col-notes">${esc(e.notes)}</td>
+      <td class="col-referrals">${e.referrals ? `<div class="notes-text" onclick="this.classList.toggle('expanded'); this.nextElementSibling && this.nextElementSibling.classList.contains('notes-toggle') && (this.nextElementSibling.textContent = this.classList.contains('expanded') ? 'less' : 'more')">${esc(e.referrals)}</div>${e.referrals.length > 60 ? '<span class="notes-toggle" onclick="this.previousElementSibling.click()">more</span>' : ''}` : ''}</td>
+      <td class="col-notes">${e.notes ? `<div class="notes-text" onclick="this.classList.toggle('expanded'); this.nextElementSibling.textContent = this.classList.contains('expanded') ? 'less' : 'more'">${esc(e.notes)}</div>${e.notes.length > 80 ? '<span class="notes-toggle" onclick="this.previousElementSibling.click()">more</span>' : ''}` : ''}</td>
     </tr>`;
   }
 
