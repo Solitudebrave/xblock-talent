@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>X-Block Talent Directory</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,700;9..144,800&family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+<style>
+  :root {
+    --bg: #f7f5f2;
+    --surface: #ffffff;
+    --text: #1a1a1a;
+    --text-2: #555;
+    --text-3: #888;
+    --accent: #c44d15;
+    --accent-light: #fef3eb;
+    --accent-hover: #a8400f;
+    --border: #e0dcd6;
+    --border-light: #eae6e0;
+    --row-hover: #fdfcfa;
+    --radius: 8px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Source Sans 3', -apple-system, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ── HEADER ── */
+  .header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 32px 24px 24px;
+  }
+  .header-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  .header-top {
+    display: flex;
+    align-items: baseline;
+    gap: 20px;
+    flex-wrap: wrap;
+    margin-bottom: 8px;
+  }
+  .header h1 {
+    font-family: 'Fraunces', Georgia, serif;
+    font-weight: 800;
+    font-size: 26px;
+    letter-spacing: -0.3px;
+    color: var(--text);
+  }
+  .header-meta {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  .people-count {
+    font-size: 14px;
+    color: var(--text-3);
+    font-weight: 500;
+  }
+  .people-count strong {
+    color: var(--accent);
+    font-weight: 700;
+  }
+  .add-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    background: var(--accent);
+    color: #fff;
+    text-decoration: none;
+    font-weight: 700;
+    font-size: 13px;
+    padding: 6px 14px;
+    border-radius: 6px;
+    transition: background 0.2s;
+    white-space: nowrap;
+  }
+  .add-btn:hover { background: var(--accent-hover); }
+  .add-btn svg { width: 14px; height: 14px; }
+  .header-desc {
+    font-size: 15px;
+    color: var(--text-2);
+    max-width: 700px;
+    line-height: 1.55;
+  }
+
+  /* ── FILTERS ── */
+  .filters {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px 24px 16px;
+  }
+  .filters-row {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    align-items: flex-start;
+  }
+  .search-box {
+    flex: 1;
+    min-width: 200px;
+    max-width: 320px;
+    position: relative;
+  }
+  .search-box svg {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 16px;
+    height: 16px;
+    color: #aaa;
+    pointer-events: none;
+  }
+  .search-box input {
+    width: 100%;
+    padding: 9px 12px 9px 36px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    font-size: 14px;
+    font-family: inherit;
+    background: var(--surface);
+    color: var(--text);
+    transition: border-color 0.2s;
+  }
+  .search-box input:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 2px rgba(196,77,21,0.08);
+  }
+
+  /* Multi-select dropdown */
+  .multi-select {
+    position: relative;
+    min-width: 200px;
+  }
+  .multi-select-btn {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 9px 12px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    font-size: 14px;
+    font-family: inherit;
+    background: var(--surface);
+    color: var(--text);
+    cursor: pointer;
+    min-width: 200px;
+    transition: border-color 0.2s;
+    user-select: none;
+  }
+  .multi-select-btn:hover { border-color: #ccc; }
+  .multi-select-btn.active { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(196,77,21,0.08); }
+  .multi-select-btn .label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .multi-select-btn .count-badge {
+    background: var(--accent);
+    color: #fff;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 1px 6px;
+    border-radius: 10px;
+    flex-shrink: 0;
+  }
+  .multi-select-btn svg {
+    width: 14px; height: 14px; color: #999; flex-shrink: 0;
+    transition: transform 0.2s;
+  }
+  .multi-select-btn.active svg { transform: rotate(180deg); }
+  .multi-select-dropdown {
+    display: none;
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0;
+    right: 0;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+    z-index: 100;
+    max-height: 280px;
+    overflow-y: auto;
+    padding: 4px 0;
+  }
+  .multi-select-dropdown.open { display: block; }
+  .ms-option {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 12px;
+    cursor: pointer;
+    font-size: 13px;
+    transition: background 0.1s;
+    user-select: none;
+  }
+  .ms-option:hover { background: var(--accent-light); }
+  .ms-option input { accent-color: var(--accent); cursor: pointer; width: 15px; height: 15px; flex-shrink: 0; }
+  .ms-option span { flex: 1; }
+  .ms-option .opt-count { font-size: 12px; color: var(--text-3); }
+  .ms-clear {
+    display: block;
+    padding: 7px 12px;
+    font-size: 12px;
+    color: var(--accent);
+    font-weight: 600;
+    cursor: pointer;
+    border-top: 1px solid var(--border-light);
+    text-align: center;
+  }
+  .ms-clear:hover { background: var(--accent-light); }
+
+  .results-count {
+    font-size: 13px;
+    color: var(--text-3);
+    padding: 9px 4px;
+    white-space: nowrap;
+    align-self: center;
+  }
+
+  /* ── TABLE ── */
+  .table-wrap {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 24px 60px;
+    overflow-x: auto;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    font-size: 14px;
+  }
+  thead {
+    background: #f5f3ef;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+  thead th {
+    padding: 10px 14px;
+    text-align: left;
+    font-weight: 700;
+    font-size: 12px;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    color: var(--text-2);
+    border-bottom: 2px solid var(--border);
+    white-space: nowrap;
+  }
+  tbody tr {
+    border-bottom: 1px solid var(--border-light);
+    transition: background 0.1s;
+  }
+  tbody tr:hover { background: var(--row-hover); }
+  tbody tr:last-child { border-bottom: none; }
+  tbody td {
+    padding: 11px 14px;
+    vertical-align: top;
+    color: var(--text);
+    line-height: 1.45;
+  }
+  .col-name { font-weight: 600; white-space: nowrap; min-width: 120px; }
+  .col-linkedin a {
+    color: var(--accent);
+    font-weight: 600;
+    text-decoration: none;
+    transition: color 0.15s;
+  }
+  .col-linkedin a:hover { color: var(--accent-hover); text-decoration: underline; }
+  .col-email { color: var(--text-2); font-size: 13px; }
+  .col-email a { color: var(--text-2); text-decoration: none; }
+  .col-email a:hover { color: var(--accent); text-decoration: underline; }
+  .col-functions { max-width: 260px; }
+  .col-location { max-width: 220px; }
+  .col-referrals { max-width: 200px; color: var(--text-2); font-size: 13px; }
+  .col-notes { max-width: 300px; color: var(--text-2); font-size: 13px; }
+
+  .func-tag {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    background: #f0ece6;
+    color: #5a5044;
+    font-size: 12px;
+    font-weight: 500;
+    margin: 1px 3px 1px 0;
+    white-space: nowrap;
+  }
+  .loc-tag {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    background: #e8f0f8;
+    color: #3a5a7a;
+    font-size: 12px;
+    font-weight: 500;
+    margin: 1px 3px 1px 0;
+    white-space: nowrap;
+  }
+
+  /* ── EMPTY / LOADING ── */
+  .state-msg {
+    text-align: center;
+    padding: 60px 24px;
+    color: var(--text-3);
+    font-size: 15px;
+  }
+  .state-msg h3 {
+    font-family: 'Fraunces', serif;
+    font-size: 20px;
+    color: var(--text);
+    margin-bottom: 6px;
+  }
+  .loading-spinner {
+    width: 28px; height: 28px;
+    border: 3px solid var(--border); border-top-color: var(--accent);
+    border-radius: 50%; animation: spin 0.7s linear infinite;
+    margin: 0 auto 12px;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .error-banner {
+    max-width: 1200px; margin: 0 auto; padding: 0 24px 12px; display: none;
+  }
+  .error-inner {
+    background: #fef2f2; border: 1px solid #fecaca; border-radius: var(--radius);
+    padding: 12px 16px; font-size: 13px; color: #991b1b;
+  }
+
+  .footer {
+    max-width: 1200px; margin: 0 auto; padding: 20px 24px;
+    text-align: center; font-size: 12px; color: #bbb;
+  }
+
+  @media (max-width: 768px) {
+    .header h1 { font-size: 22px; }
+    .header-top { gap: 12px; }
+    .filters-row { flex-direction: column; }
+    .search-box { max-width: 100%; }
+    .multi-select { width: 100%; }
+    .multi-select-btn { width: 100%; }
+    table { font-size: 13px; }
+    thead th, tbody td { padding: 8px 10px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-inner">
+    <div class="header-top">
+      <h1>X-Block Talent Directory</h1>
+      <div class="header-meta">
+        <span class="people-count"><strong id="totalCount">—</strong> people listed</span>
+        <a class="add-btn" href="https://forms.gle/ULBusv3JuBvE5EDn6" target="_blank">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+          Add Your Info
+        </a>
+      </div>
+    </div>
+    <p class="header-desc">Connecting talented X-Block teammates with new opportunities. Browse the directory or add yourself so hiring managers and recruiters can find you.</p>
+  </div>
+</div>
+
+<div class="filters">
+  <div class="filters-row">
+    <div class="search-box">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+      <input type="text" id="searchInput" placeholder="Search by keyword..." />
+    </div>
+    <div class="multi-select" id="fnMultiSelect">
+      <div class="multi-select-btn" id="fnBtn">
+        <span class="label">All Functions</span>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+      </div>
+      <div class="multi-select-dropdown" id="fnDropdown"></div>
+    </div>
+    <div class="multi-select" id="locMultiSelect">
+      <div class="multi-select-btn" id="locBtn">
+        <span class="label">All Locations</span>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+      </div>
+      <div class="multi-select-dropdown" id="locDropdown"></div>
+    </div>
+    <span class="results-count" id="resultsCount"></span>
+  </div>
+</div>
+
+<div id="errorBanner" class="error-banner"><div class="error-inner" id="errorMessage"></div></div>
+
+<div class="table-wrap">
+  <div id="tableContainer">
+    <div class="state-msg"><div class="loading-spinner"></div>Loading directory...</div>
+  </div>
+</div>
+
+<div class="footer">X-Block Talent Directory · Updated: <span id="refreshTime"></span></div>
+
+<script>
+// ============================================================
+// CONFIG
+// ============================================================
+const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQuBexetIh7XXfU3EODuLymR5ysFUdA4AcHfsCijYdTlACivohdavP4MZzAxi75K_KG35qLaA6rD9_s/pub?gid=997751886&single=true&output=csv";
+
+let allEntries = [];
+let selectedFunctions = new Set();
+let selectedLocations = new Set();
+
+// ============================================================
+// LOAD
+// ============================================================
+async function loadData() {
+  return new Promise((resolve) => {
+    Papa.parse(CSV_URL, {
+      download: true,
+      header: true,
+      skipEmptyLines: true,
+      complete: function(results) {
+        if (!results.data || !results.data.length) { resolve([]); return; }
+
+        const fields = results.meta.fields || [];
+        console.log("Columns:", fields);
+
+        // Map columns by partial name match
+        const col = {};
+        fields.forEach(f => {
+          const lc = f.toLowerCase();
+          if (lc.includes('full name') || lc === 'name') col.name = f;
+          else if (lc.includes('linkedin')) col.linkedin = f;
+          else if (lc.includes('email')) col.email = f;
+          else if (lc.includes('function')) col.functions = f;
+          else if (lc.includes('location') || lc.includes('where are you')) col.location = f;
+          else if (lc.includes('referral') || lc.includes('connection')) col.referrals = f;
+          else if (lc.includes('about') || lc.includes('note') || lc.includes('additional')) col.notes = f;
+        });
+
+        console.log("Mapped:", col);
+
+        const entries = [];
+        const seen = new Set(); // deduplicate by name+email
+        for (const row of results.data) {
+          const name = (row[col.name] || '').trim();
+          if (!name) continue;
+          const email = (row[col.email] || '').trim();
+          const key = name.toLowerCase() + '|' + email.toLowerCase();
+          if (seen.has(key)) continue;
+          seen.add(key);
+          entries.push({
+            name,
+            linkedin: (row[col.linkedin] || '').trim(),
+            email,
+            functions: (row[col.functions] || '').trim(),
+            location: (row[col.location] || '').trim(),
+            referrals: (row[col.referrals] || '').trim(),
+            notes: (row[col.notes] || '').trim()
+          });
+        }
+        resolve(entries);
+      },
+      error: function(err) {
+        showError("Failed to load: " + err.message);
+        resolve([]);
+      }
+    });
+  });
+}
+
+// ============================================================
+// HELPERS
+// ============================================================
+function showError(msg) { document.getElementById('errorBanner').style.display='block'; document.getElementById('errorMessage').textContent=msg; }
+function esc(s) { const d=document.createElement('div'); d.textContent=s; return d.innerHTML; }
+function splitMulti(val) { return val.split(',').map(s=>s.trim()).filter(Boolean); }
+function collectUnique(entries, field) {
+  const counts = {};
+  entries.forEach(e => splitMulti(e[field]).forEach(v => { counts[v] = (counts[v]||0)+1; }));
+  return Object.entries(counts).sort((a,b) => b[1]-a[1]);
+}
+
+// ============================================================
+// MULTI-SELECT DROPDOWNS
+// ============================================================
+function buildMultiSelect(btnId, dropdownId, options, selectedSet, onChange) {
+  const btn = document.getElementById(btnId);
+  const dropdown = document.getElementById(dropdownId);
+
+  // Build options
+  let html = '';
+  options.forEach(([val, count]) => {
+    html += `<label class="ms-option"><input type="checkbox" value="${esc(val)}"><span>${esc(val)}</span><span class="opt-count">${count}</span></label>`;
+  });
+  html += `<div class="ms-clear">Clear all</div>`;
+  dropdown.innerHTML = html;
+
+  // Toggle
+  btn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const isOpen = dropdown.classList.contains('open');
+    closeAllDropdowns();
+    if (!isOpen) {
+      dropdown.classList.add('open');
+      btn.classList.add('active');
+    }
+  });
+
+  // Checkbox changes
+  dropdown.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+    cb.addEventListener('change', () => {
+      if (cb.checked) selectedSet.add(cb.value);
+      else selectedSet.delete(cb.value);
+      updateBtnLabel(btn, selectedSet, btnId === 'fnBtn' ? 'Functions' : 'Locations');
+      onChange();
+    });
+  });
+
+  // Clear
+  dropdown.querySelector('.ms-clear').addEventListener('click', () => {
+    selectedSet.clear();
+    dropdown.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
+    updateBtnLabel(btn, selectedSet, btnId === 'fnBtn' ? 'Functions' : 'Locations');
+    onChange();
+  });
+}
+
+function updateBtnLabel(btn, selectedSet, label) {
+  const labelEl = btn.querySelector('.label');
+  const existingBadge = btn.querySelector('.count-badge');
+  if (existingBadge) existingBadge.remove();
+
+  if (selectedSet.size === 0) {
+    labelEl.textContent = `All ${label}`;
+  } else {
+    const vals = [...selectedSet];
+    labelEl.textContent = vals.length === 1 ? vals[0] : `${vals.length} ${label.toLowerCase()}`;
+    const badge = document.createElement('span');
+    badge.className = 'count-badge';
+    badge.textContent = selectedSet.size;
+    btn.insertBefore(badge, btn.querySelector('svg'));
+  }
+}
+
+function closeAllDropdowns() {
+  document.querySelectorAll('.multi-select-dropdown').forEach(d => d.classList.remove('open'));
+  document.querySelectorAll('.multi-select-btn').forEach(b => b.classList.remove('active'));
+}
+
+document.addEventListener('click', closeAllDropdowns);
+document.querySelectorAll('.multi-select-dropdown').forEach(d => {
+  d.addEventListener('click', e => e.stopPropagation());
+});
+
+// ============================================================
+// RENDER TABLE
+// ============================================================
+function renderTable(entries) {
+  const container = document.getElementById('tableContainer');
+
+  if (!entries.length) {
+    container.innerHTML = `<div class="state-msg"><h3>No results found</h3><p>Try adjusting your search or filters.</p></div>`;
+    return;
+  }
+
+  let html = `<table>
+    <thead><tr>
+      <th>Name</th>
+      <th>LinkedIn</th>
+      <th>Email</th>
+      <th>Function(s)</th>
+      <th>Location(s)</th>
+      <th>Referrals</th>
+      <th>About</th>
+    </tr></thead><tbody>`;
+
+  for (const e of entries) {
+    const linkedinDisplay = e.linkedin ? (() => {
+      let url = e.linkedin;
+      if (!url.startsWith('http')) url = 'https://' + url;
+      // Show shortened display text
+      let display = url.replace(/^https?:\/\/(www\.)?/, '').replace(/\/$/, '');
+      if (display.length > 30) display = display.slice(0, 30) + '…';
+      return `<a href="${esc(url)}" target="_blank" rel="noopener">${esc(display)}</a>`;
+    })() : '';
+
+    const emailHtml = e.email ? `<a href="mailto:${esc(e.email)}">${esc(e.email)}</a>` : '';
+
+    const fnTags = splitMulti(e.functions).map(f => `<span class="func-tag">${esc(f)}</span>`).join(' ');
+    const locTags = splitMulti(e.location).map(l => `<span class="loc-tag">${esc(l)}</span>`).join(' ');
+
+    html += `<tr>
+      <td class="col-name">${esc(e.name)}</td>
+      <td class="col-linkedin">${linkedinDisplay}</td>
+      <td class="col-email">${emailHtml}</td>
+      <td class="col-functions">${fnTags}</td>
+      <td class="col-location">${locTags}</td>
+      <td class="col-referrals">${esc(e.referrals)}</td>
+      <td class="col-notes">${esc(e.notes)}</td>
+    </tr>`;
+  }
+
+  html += '</tbody></table>';
+  container.innerHTML = html;
+}
+
+// ============================================================
+// FILTER
+// ============================================================
+function applyFilters() {
+  const search = document.getElementById('searchInput').value.toLowerCase().trim();
+
+  const filtered = allEntries.filter(e => {
+    // Keyword search across all fields
+    const ms = !search || Object.values(e).some(v => v.toLowerCase().includes(search));
+
+    // Multi-select: entry matches if ANY of its values overlap with selected
+    const mf = selectedFunctions.size === 0 || splitMulti(e.functions).some(f => selectedFunctions.has(f));
+    const ml = selectedLocations.size === 0 || splitMulti(e.location).some(l => selectedLocations.has(l));
+
+    return ms && mf && ml;
+  });
+
+  document.getElementById('resultsCount').textContent = `${filtered.length} of ${allEntries.length}`;
+  renderTable(filtered);
+}
+
+// ============================================================
+// INIT
+// ============================================================
+(async function init() {
+  allEntries = await loadData();
+
+  document.getElementById('totalCount').textContent = allEntries.length;
+
+  // Build filter dropdowns
+  const fnOptions = collectUnique(allEntries, 'functions');
+  const locOptions = collectUnique(allEntries, 'location');
+  buildMultiSelect('fnBtn', 'fnDropdown', fnOptions, selectedFunctions, applyFilters);
+  buildMultiSelect('locBtn', 'locDropdown', locOptions, selectedLocations, applyFilters);
+
+  applyFilters();
+  document.getElementById('refreshTime').textContent = new Date().toLocaleString();
+  document.getElementById('searchInput').addEventListener('input', applyFilters);
+})();
+</script>
+</body>
+</html>
