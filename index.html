@@ -360,6 +360,158 @@
     padding: 12px 16px; font-size: 13px; color: #991b1b;
   }
 
+  /* ── WITHDRAW BUTTON ── */
+  .withdraw-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 10px;
+    border: 1px solid #e0dcd6;
+    border-radius: 5px;
+    background: transparent;
+    color: var(--text-3);
+    font-size: 12px;
+    font-family: inherit;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s;
+    white-space: nowrap;
+  }
+  .withdraw-btn:hover {
+    border-color: #d44;
+    color: #d44;
+    background: #fef2f2;
+  }
+  .withdraw-btn svg { width: 13px; height: 13px; }
+
+  /* ── MODAL ── */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.4);
+    z-index: 1000;
+    justify-content: center;
+    align-items: center;
+    backdrop-filter: blur(2px);
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: var(--surface);
+    border-radius: 12px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+    width: 440px;
+    max-width: 92vw;
+    max-height: 90vh;
+    overflow-y: auto;
+    padding: 28px 28px 20px;
+  }
+  .modal h2 {
+    font-family: 'Fraunces', serif;
+    font-size: 20px;
+    margin-bottom: 4px;
+  }
+  .modal-sub {
+    font-size: 14px;
+    color: var(--text-2);
+    margin-bottom: 20px;
+  }
+  .modal-sub strong { color: var(--text); }
+  .modal-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-2);
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    margin-bottom: 8px;
+  }
+  .reason-options {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 18px;
+  }
+  .reason-option {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 12px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.15s;
+    user-select: none;
+  }
+  .reason-option:hover { border-color: var(--accent); background: var(--accent-light); }
+  .reason-option input[type="radio"] {
+    accent-color: var(--accent);
+    width: 16px; height: 16px;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+  .reason-option.selected {
+    border-color: var(--accent);
+    background: var(--accent-light);
+  }
+  .modal-comment {
+    width: 100%;
+    padding: 9px 12px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    font-size: 14px;
+    font-family: inherit;
+    resize: vertical;
+    min-height: 60px;
+    margin-bottom: 20px;
+    transition: border-color 0.2s;
+  }
+  .modal-comment:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 2px rgba(196,77,21,0.08); }
+  .modal-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+  }
+  .modal-cancel {
+    padding: 8px 18px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: var(--surface);
+    color: var(--text-2);
+    font-size: 14px;
+    font-weight: 600;
+    font-family: inherit;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .modal-cancel:hover { background: #f5f3ef; }
+  .modal-submit {
+    padding: 8px 20px;
+    border: none;
+    border-radius: 6px;
+    background: #d44;
+    color: #fff;
+    font-size: 14px;
+    font-weight: 700;
+    font-family: inherit;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .modal-submit:hover { background: #b33; }
+  .modal-submit:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  .modal-success {
+    text-align: center;
+    padding: 20px 0 8px;
+  }
+  .modal-success svg { width: 48px; height: 48px; color: #22c55e; margin-bottom: 10px; }
+  .modal-success h3 {
+    font-family: 'Fraunces', serif;
+    font-size: 18px;
+    margin-bottom: 4px;
+  }
+  .modal-success p { font-size: 14px; color: var(--text-2); }
+
   .footer {
     max-width: 1200px; margin: 0 auto; padding: 20px 24px;
     text-align: center; font-size: 12px; color: #bbb;
@@ -427,6 +579,52 @@
   </div>
 </div>
 
+<!-- Withdraw Modal -->
+<div class="modal-overlay" id="withdrawModal">
+  <div class="modal" id="withdrawModalContent">
+    <div id="withdrawForm">
+      <h2>Withdraw from Directory</h2>
+      <p class="modal-sub">Remove <strong id="withdrawName"></strong> from the talent list.</p>
+      <p class="modal-label">Reason for withdrawing</p>
+      <div class="reason-options" id="reasonOptions">
+        <label class="reason-option">
+          <input type="radio" name="withdrawReason" value="Found a new opportunity">
+          <span>Found a new opportunity</span>
+        </label>
+        <label class="reason-option">
+          <input type="radio" name="withdrawReason" value="No longer looking">
+          <span>No longer looking</span>
+        </label>
+        <label class="reason-option">
+          <input type="radio" name="withdrawReason" value="Privacy concerns">
+          <span>Privacy concerns</span>
+        </label>
+        <label class="reason-option">
+          <input type="radio" name="withdrawReason" value="Listed by mistake">
+          <span>Listed by mistake</span>
+        </label>
+        <label class="reason-option">
+          <input type="radio" name="withdrawReason" value="Other">
+          <span>Other</span>
+        </label>
+      </div>
+      <textarea class="modal-comment" id="withdrawComment" placeholder="Any additional comments (optional)..."></textarea>
+      <div class="modal-actions">
+        <button class="modal-cancel" id="withdrawCancelBtn">Cancel</button>
+        <button class="modal-submit" id="withdrawSubmitBtn" disabled>Withdraw</button>
+      </div>
+    </div>
+    <div id="withdrawSuccess" class="modal-success" style="display:none">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9 12l2 2 4-4"/></svg>
+      <h3>Withdrawal Submitted</h3>
+      <p>Your request has been recorded. You will be removed from the directory on the next sync.</p>
+      <div class="modal-actions" style="justify-content:center; margin-top:16px;">
+        <button class="modal-cancel" id="withdrawCloseBtn">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div class="footer">X-Block Talent Directory · Updated: <span id="refreshTime"></span></div>
 
 <script>
@@ -435,7 +633,14 @@
 // ============================================================
 const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQuBexetIh7XXfU3EODuLymR5ysFUdA4AcHfsCijYdTlACivohdavP4MZzAxi75K_KG35qLaA6rD9_s/pub?gid=997751886&single=true&output=csv";
 
+// Google Apps Script web app for recording withdrawals
+const WITHDRAW_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwO9Y-7rS1dLDRQ7gQmhWp5zFt2qNK1_fCtm_pKDTkaRog874aBGV6yVyQ84J3d7HJaYg/exec";
+
+// Withdrawals sheet (published CSV)
+const WITHDRAWALS_CSV_URL = "https://docs.google.com/spreadsheets/d/1uj9NkLwNoJiZMDkLl2IxcumbCXWDAkQOO0W60Po7n4s/pub?gid=0&single=true&output=csv";
+
 let allEntries = [];
+let withdrawnKeys = new Set();
 let selectedFunctions = new Set();
 let selectedLocations = new Set();
 
@@ -602,6 +807,7 @@ function renderTable(entries) {
       <th>Location(s)</th>
       <th>Referrals</th>
       <th>About</th>
+      <th></th>
     </tr></thead><tbody>`;
 
   for (const e of entries) {
@@ -627,6 +833,7 @@ function renderTable(entries) {
       <td class="col-location">${locTags}</td>
       <td class="col-referrals">${e.referrals ? `<div class="notes-text" onclick="this.classList.toggle('expanded'); this.nextElementSibling && this.nextElementSibling.classList.contains('notes-toggle') && (this.nextElementSibling.textContent = this.classList.contains('expanded') ? 'less' : 'more')">${esc(e.referrals)}</div>${e.referrals.length > 60 ? '<span class="notes-toggle" onclick="this.previousElementSibling.click()">more</span>' : ''}` : ''}</td>
       <td class="col-notes">${e.notes ? `<div class="notes-text" onclick="this.classList.toggle('expanded'); this.nextElementSibling.textContent = this.classList.contains('expanded') ? 'less' : 'more'">${esc(e.notes)}</div>${e.notes.length > 80 ? '<span class="notes-toggle" onclick="this.previousElementSibling.click()">more</span>' : ''}` : ''}</td>
+      <td><button class="withdraw-btn" onclick="openWithdrawModal('${esc(e.name).replace(/'/g, "\\'")}', '${esc(e.email).replace(/'/g, "\\'")}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg>Withdraw</button></td>
     </tr>`;
   }
 
@@ -641,6 +848,9 @@ function applyFilters() {
   const search = document.getElementById('searchInput').value.toLowerCase().trim();
 
   const filtered = allEntries.filter(e => {
+    // Exclude withdrawn entries
+    if (withdrawnKeys.has(e.name.toLowerCase() + '|' + e.email.toLowerCase())) return false;
+
     // Keyword search across all fields
     const ms = !search || Object.values(e).some(v => v.toLowerCase().includes(search));
 
@@ -656,16 +866,139 @@ function applyFilters() {
 }
 
 // ============================================================
+// LOAD WITHDRAWALS
+// ============================================================
+async function loadWithdrawals() {
+  if (!WITHDRAWALS_CSV_URL || WITHDRAWALS_CSV_URL === "YOUR_WITHDRAWALS_SHEET_CSV_URL") return;
+  return new Promise((resolve) => {
+    Papa.parse(WITHDRAWALS_CSV_URL, {
+      download: true,
+      header: true,
+      skipEmptyLines: true,
+      complete: function(results) {
+        if (results.data) {
+          for (const row of results.data) {
+            const fields = results.meta.fields || [];
+            let name = '', email = '';
+            fields.forEach(f => {
+              const lc = f.toLowerCase();
+              if (lc.includes('name')) name = (row[f] || '').trim();
+              if (lc.includes('email')) email = (row[f] || '').trim();
+            });
+            if (name) {
+              withdrawnKeys.add(name.toLowerCase() + '|' + email.toLowerCase());
+            }
+          }
+        }
+        resolve();
+      },
+      error: function() { resolve(); }
+    });
+  });
+}
+
+// ============================================================
+// WITHDRAW MODAL
+// ============================================================
+let pendingWithdraw = { name: '', email: '' };
+
+function openWithdrawModal(name, email) {
+  pendingWithdraw = { name, email };
+  document.getElementById('withdrawName').textContent = name;
+  document.getElementById('withdrawForm').style.display = '';
+  document.getElementById('withdrawSuccess').style.display = 'none';
+  document.getElementById('withdrawComment').value = '';
+  document.getElementById('withdrawSubmitBtn').disabled = true;
+  document.querySelectorAll('input[name="withdrawReason"]').forEach(r => r.checked = false);
+  document.querySelectorAll('.reason-option').forEach(o => o.classList.remove('selected'));
+  document.getElementById('withdrawModal').classList.add('open');
+}
+
+function closeWithdrawModal() {
+  document.getElementById('withdrawModal').classList.remove('open');
+}
+
+// Reason option highlighting & enable submit
+document.getElementById('reasonOptions').addEventListener('change', () => {
+  document.querySelectorAll('.reason-option').forEach(o => {
+    o.classList.toggle('selected', o.querySelector('input').checked);
+  });
+  document.getElementById('withdrawSubmitBtn').disabled =
+    !document.querySelector('input[name="withdrawReason"]:checked');
+});
+
+// Cancel / close
+document.getElementById('withdrawCancelBtn').addEventListener('click', closeWithdrawModal);
+document.getElementById('withdrawCloseBtn').addEventListener('click', closeWithdrawModal);
+document.getElementById('withdrawModal').addEventListener('click', (e) => {
+  if (e.target === document.getElementById('withdrawModal')) closeWithdrawModal();
+});
+
+// Submit
+document.getElementById('withdrawSubmitBtn').addEventListener('click', async () => {
+  const reason = document.querySelector('input[name="withdrawReason"]:checked')?.value;
+  if (!reason) return;
+  const comment = document.getElementById('withdrawComment').value.trim();
+  const btn = document.getElementById('withdrawSubmitBtn');
+  btn.disabled = true;
+  btn.textContent = 'Submitting...';
+
+  try {
+    const payload = {
+      name: pendingWithdraw.name,
+      email: pendingWithdraw.email,
+      reason: reason,
+      comment: comment,
+      timestamp: new Date().toISOString()
+    };
+
+    if (WITHDRAW_SCRIPT_URL && WITHDRAW_SCRIPT_URL !== "YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL") {
+      await fetch(WITHDRAW_SCRIPT_URL, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+    } else {
+      console.warn('Withdraw script URL not configured. Payload:', payload);
+    }
+
+    // Show success
+    document.getElementById('withdrawForm').style.display = 'none';
+    document.getElementById('withdrawSuccess').style.display = '';
+
+    // Add to local withdrawn set so they disappear immediately
+    withdrawnKeys.add(pendingWithdraw.name.toLowerCase() + '|' + pendingWithdraw.email.toLowerCase());
+    applyFilters();
+    document.getElementById('totalCount').textContent =
+      allEntries.filter(e => !withdrawnKeys.has(e.name.toLowerCase() + '|' + e.email.toLowerCase())).length;
+
+  } catch (err) {
+    console.error('Withdraw error:', err);
+    btn.textContent = 'Withdraw';
+    btn.disabled = false;
+    alert('Something went wrong. Please try again.');
+  }
+});
+
+// ============================================================
 // INIT
 // ============================================================
 (async function init() {
-  allEntries = await loadData();
+  // Load withdrawals list and main data in parallel
+  const [_, entries] = await Promise.all([loadWithdrawals(), loadData()]);
+  allEntries = entries;
 
-  document.getElementById('totalCount').textContent = allEntries.length;
+  // Filter out withdrawn entries
+  const activeEntries = allEntries.filter(e =>
+    !withdrawnKeys.has(e.name.toLowerCase() + '|' + e.email.toLowerCase())
+  );
 
-  // Build filter dropdowns
-  const fnOptions = collectUnique(allEntries, 'functions');
-  const locOptions = collectUnique(allEntries, 'location');
+  document.getElementById('totalCount').textContent = activeEntries.length;
+
+  // Build filter dropdowns from active entries
+  const fnOptions = collectUnique(activeEntries, 'functions');
+  const locOptions = collectUnique(activeEntries, 'location');
   buildMultiSelect('fnBtn', 'fnDropdown', fnOptions, selectedFunctions, applyFilters);
   buildMultiSelect('locBtn', 'locDropdown', locOptions, selectedLocations, applyFilters);
 
